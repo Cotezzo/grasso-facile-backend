@@ -22,12 +22,12 @@ const validateNewProduct = (product) => {
     return validateProduct(product);
 }
 
-const validateProduct = ({ description, brand, location, expiration_date, insertion_date, units, cal, wgt, optional }) => {
+const validateProduct = ({ description, brand, location, expiration_date, insertion_date, units, cal, wgt, optional, check }) => {
     if (!description)       return reject("Missing description");
     if(!location)           return reject("Missing location");
     if(!expiration_date)    return reject("Missing expiration_date");
     if(!insertion_date)     return reject("Missing insertion_date");
-    return { description, brand, location, expiration_date, insertion_date, units, cal, wgt, optional };
+    return { description, brand, location, expiration_date, insertion_date, units, cal, wgt, optional, check };
 }
 
 /* ==== CORE ==================================================================================== */
