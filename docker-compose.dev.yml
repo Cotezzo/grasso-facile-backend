@@ -1,0 +1,86 @@
+# OBSOLETE: Docker Compose Version - specifies format and available features.
+# version: '3.8'
+
+#! docker-compose automatically loads environment variables from .env files
+
+
+
+## ==== NETWORKS ============================================================ ##
+## Defines the custom networks to be created and used by the services.
+networks:
+  grasso-network:
+    
+    # Specify this is a new network (and its name)
+    external: false
+    name: "grasso-network"
+
+    # IP Address Management settings: default driver, subnet in CIDR format.
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
+
+
+
+
+## ==== SERVICES ============================================================ ##
+## Defines the services (containers) that make up the application.
+## Service names ar arbitrary and used for automatic container name generation.
+## Service names are used for DNS resolution inside the Docker private network.
+services:
+
+
+  # ==== MONGO =============================================================== #
+  grasso-mongo:
+
+    # Custom container name, image to be used and environment variables.
+    container_name: grasso-mongo
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      #MONGO_INITDB_DATABASE: haram-leotta
+
+    # Custom network settings - use local network; no need for a static address.
+    networks:
+      - grasso-network
+
+    # Bind Database data to local target directory
+    volumes:
+      - ./volumes/mongo-data:/data/db
+
+    #! TEST ONLY - Map ports between host and container - allow external access.
+    ports:
+      - "27017:27017"
+
+
+  # ==== NODE ================================================================ #
+  grasso-node:
+
+    # Custom container name and environment variables.
+    container_name: grasso-node
+    environment:
+      # Express configuration
+      HTTP_PORT: 8080
+      HTTPS_PORT: 8443
+      # MongoDB configuration
+      MONGO_USERNAME: ${MONGO_USERNAME}
+      MONGO_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_HOST: grasso-mongo
+      MONGO_PORT: 27017
+
+    # Build image from Dockerfile in the current directory and override its CMD.
+    build: .
+    command: npm run start
+    image: grasso-node:latest
+
+    # Map ports between host and container - allow external access.
+    ports:
+      - "80:8080"
+      - "8080:8080"
+      - "443:8443"
+      - "8443:8443"
+
+    # Custom network settings - use local network; no need for a static address.
+    networks:
+      - grasso-network

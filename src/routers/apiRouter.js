@@ -19,12 +19,42 @@ router.get("/products/:_id?", async (req, res) => {
 });
 
 /** Saves the product with the provided data. */
+let cachedDescriptionDatalist = undefined;
+let cachedLocationDatalist = undefined;
+let cachedBrandDatalist = undefined;
 router.post("/products/add", async (req, res) => {
     try {
-        res.json(await productService.addProduct(req.body.product, req.dbName));
+        const product = req.body.product;
+        const dbName = req.dbName;
+
+        if(!cachedDescriptionDatalist) cachedDescriptionDatalist = await datalistService.getDatalist("description", dbName);
+        if(!cachedLocationDatalist) cachedLocationDatalist = await datalistService.getDatalist("location", dbName);
+        if(!cachedBrandDatalist) cachedBrandDatalist = await datalistService.getDatalist("brand", dbName);
+
+        const description = product.description;
+        const location = product.location;
+        const brand = product.brand;
+
+        if(!cachedDescriptionDatalist.includes(description)) {
+            await datalistService.addOption("description", description, dbName);
+            cachedDescriptionDatalist.push(description);
+            console.log(`Added ${description} to datalist "description"`);
+        }
+        if(!cachedLocationDatalist.includes(location)) {
+            await datalistService.addOption("location", location, dbName);
+            cachedLocationDatalist.push(location);
+            console.log(`Added ${location} to datalist "location"`);
+        }
+        if(!cachedBrandDatalist.includes(brand)) {
+            await datalistService.addOption("brand", brand, dbName);
+            cachedBrandDatalist.push(brand);
+            console.log(`Added ${brand} to datalist "brand"`);
+        }
+
+        res.json(await productService.addProduct(product, dbName));
     } catch (e) {
         // TODO: catch different errors
-        console.log(e);
+        console.error("Error:\n", e);
         res.status(400).json({ e });
     }
 });

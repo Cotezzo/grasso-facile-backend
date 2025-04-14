@@ -1,10 +1,10 @@
 const mongoose = require("mongoose");	// MongoDB Database connector
 require("dotenv").config();				// Enviroment variables setup
 
-const mongoDbAddress = process.env.TEST ? process.env.MONGO_URL_TEST : process.env.MONGO_URL
-console.log(`Trying to connect to ${mongoDbAddress}...`);
+const address = `mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}/`;
+console.log(`Trying to connect to ${address}...`);
 
-mongoose.connect(mongoDbAddress,
+mongoose.connect(address,
     {
         useUnifiedTopology: true,
         useNewUrlParser: true,

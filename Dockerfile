@@ -1,4 +1,4 @@
-FROM node:19.8.1
+FROM node:20.18.1
 WORKDIR /usr/src/app
 COPY package*.json ./
 RUN npm install

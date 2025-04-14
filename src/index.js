@@ -2,37 +2,61 @@ const fs = require("fs");
 const https = require("https");
 const express = require("express");									// Express Framework
 const morgan = require("morgan");									// Cool logger
-const helmet = require("helmet");									// Cluster of 15 (11) middlewares that automatically setups some headers
-
-const apiHandler = require("./routers/apiRouter");					// API router (protected)
+const helmet = require("helmet");
+const apiHandler = require("./routers/apiRouter");
 const selectDatabase = require("./middlewares/selectDatabase");
 const allowCrossDomain = require("./middlewares/allowCrossDomain");
 
-/* ============== INITIALIZATION ================================================================ */
-const app = express();												// App instance
-require("dotenv").config();											// Enviroment variables setup
+
+/* ============== INITIALIZATION ============================================ */
+/** Express app instance. */
+const app = express();
 
 
-/* ============== MIDDLEWARES =================================================================== */
-// * They have to act before the request handler
-app.use(morgan("common"));											// Logger
-app.use(express.json());											// Read json payloads
-app.use(express.urlencoded({ extended: true }));					// Read url=encoded payloads
-app.use(helmet());													// Headers for Security and other staff
+/* ============== MIDDLEWARES =============================================== */
+// Middlewares act before request handlers
 
-/* ============== REQUEST HANDLER =============================================================== */
-app.use(express.static("./public/"));                               // Automatically redirects requests to files in ./public
+// Logger with a specific format useful for API calls
+app.use(morgan("common"));
+
+// Enable JSON payloads
+app.use(express.json());
+
+// Read url=encoded payloads
+app.use(express.urlencoded({ extended: true }));
+
+// Cluster of 15 (11) middlewares that automatically setups Security headers.
+// In order to correctly display CSS, disable "contentSecurityPolicy" feature.
+app.use(helmet({ contentSecurityPolicy: false }));
+
+
+/* ============== REQUEST HANDLER =========================================== */
+// Automatically redirect requests to files in ./public (serve frontend files)
+app.use(express.static("./public/"));
+
+// Apply CORS fix middleware
 app.use(allowCrossDomain);
+
+// Setup API handler - each request specifies what database to be used
 app.use("/api/:dbName", selectDatabase, apiHandler);
+
+// If the called endpoint does not exist, redirect to / (index.html)
 app.all('*', (req, res) => res.redirect("/"));
 
-/* ============== LISTENING ===================================================================== */
-// app.listen(process.env.HTTP_PORT, () => console.log(`HTTP server successfully started and listening on port ${process.env.HTTP_PORT}... `));
 
-const options = {                                                   // File contenenti le credenziali SSL
+/* ============== LISTENING ================================================= */
+// Configure SSL keys and self-signed certificate for HTTPS
+const options = {
     key: fs.readFileSync('./ssl/key.pem'),
     cert: fs.readFileSync('./ssl/cert.pem')
 };
 
-https.createServer(options, app).listen(process.env.HTTPS_PORT,
-    () => console.log(`HTTPS server successfully started. Listening on port ${process.env.HTTPS_PORT}... `));
+// Set up HTTP server
+app.listen(process.env.HTTP_PORT, () => {
+    console.log(`HTTP server started on port ${process.env.HTTP_PORT}... `);
+});
+
+// Set up HTTPS server
+https.createServer(options, app).listen(process.env.HTTPS_PORT, () => {
+    console.log(`HTTPS server started on port ${process.env.HTTPS_PORT}... `);
+});
