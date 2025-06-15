@@ -33,7 +33,7 @@ const addOptionInternal = async (DatalistModel, _id, option) => {
 const getDatalist = (_id, dbName = "grasso-facile") => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!_id) return reject("Invalid parameters. ");
+            if (!_id) return reject("Invalid or missing id. ");
 
             resolve(await getModelFromDbName(dbName, "Datalist", DatalistSchema, getDatalistInternal, _id));
         } catch (e) {
@@ -51,7 +51,7 @@ const getDatalist = (_id, dbName = "grasso-facile") => {
 const addOption = (_id, option, dbName = "grasso-facile") => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!_id || !option) return reject("Invalid parameters. ");
+            if (!_id || !option) return reject("Invalid or missing id or option. ");
 
             resolve(await getModelFromDbName(dbName, "Datalist", DatalistSchema, addOptionInternal, _id, option));
         } catch (e) {

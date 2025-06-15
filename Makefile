@@ -25,7 +25,7 @@ all: local
 #	- convert standard input to command arguments with xargs
 #	- run the module in a modified environment with exported variables
 local:
-	docker compose -f ${DOCKER_COMPOSE_DEV} up -d mongodb-grasso
+	docker compose -f ${DOCKER_COMPOSE_DEV} up -d grasso-mongo
 	env $$(cat .env | grep -v '^#' | sed 's/\r$$//' | xargs -r) npm start
 
 # DEV: run docker-compose dev configuration and keep terminal (nohup ... &).

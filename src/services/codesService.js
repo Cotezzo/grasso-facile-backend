@@ -49,7 +49,7 @@ const getCodes = (dbName = "grasso-facile") => {
 const addCode = (code, description, dbName = "grasso-facile") => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!code || !description) return reject("Invalid parameters. ");
+            if (!code || !description) return reject("Invalid or missing code or description. ");
 
             resolve(await getModelFromDbName(dbName, "Codes", CodesSchema, addCodeInternal, code, description, "0"));
         } catch (e) {

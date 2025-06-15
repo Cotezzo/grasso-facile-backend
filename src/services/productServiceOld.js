@@ -145,7 +145,7 @@ const addOption = (_id, option) => {
 const addCode = (code, description, _id = "0") => {
     return new Promise(async (resolve, reject) => {
         try {
-            if(!code || !description) return reject({ e: "Invalid parameters. " });
+            if(!code || !description) return reject({ e: "No code or description provided. " });
 
             const codes = await Codes.findById(_id);                                // Retrieve codes data
             if(!codes) return reject({ e: "No codes with this id. " });

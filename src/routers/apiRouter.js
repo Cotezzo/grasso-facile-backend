@@ -19,38 +19,41 @@ router.get("/products/:_id?", async (req, res) => {
 });
 
 /** Saves the product with the provided data. */
-let cachedDescriptionDatalist = undefined;
-let cachedLocationDatalist = undefined;
-let cachedBrandDatalist = undefined;
-router.post("/products/add", async (req, res) => {
-    try {
-        const product = req.body.product;
-        const dbName = req.dbName;
+let cachedDescriptionDatalist = {};
+let cachedLocationDatalist = {};
+let cachedBrandDatalist = {};
 
-        if(!cachedDescriptionDatalist) cachedDescriptionDatalist = await datalistService.getDatalist("description", dbName);
-        if(!cachedLocationDatalist) cachedLocationDatalist = await datalistService.getDatalist("location", dbName);
-        if(!cachedBrandDatalist) cachedBrandDatalist = await datalistService.getDatalist("brand", dbName);
+async function updateDatalists(product, dbName) {
+        if(!cachedDescriptionDatalist[dbName]) cachedDescriptionDatalist[dbName] = await datalistService.getDatalist("description", dbName);
+        if(!cachedLocationDatalist[dbName]) cachedLocationDatalist[dbName] = await datalistService.getDatalist("location", dbName);
+        if(!cachedBrandDatalist[dbName]) cachedBrandDatalist[dbName] = await datalistService.getDatalist("brand", dbName);
 
         const description = product.description;
         const location = product.location;
         const brand = product.brand;
 
-        if(!cachedDescriptionDatalist.includes(description)) {
+        if(description !== undefined && !cachedDescriptionDatalist[dbName].includes(description)) {
             await datalistService.addOption("description", description, dbName);
-            cachedDescriptionDatalist.push(description);
+            cachedDescriptionDatalist[dbName].push(description);
             console.log(`Added ${description} to datalist "description"`);
         }
-        if(!cachedLocationDatalist.includes(location)) {
+        if(location !== undefined && !cachedLocationDatalist[dbName].includes(location)) {
             await datalistService.addOption("location", location, dbName);
-            cachedLocationDatalist.push(location);
+            cachedLocationDatalist[dbName].push(location);
             console.log(`Added ${location} to datalist "location"`);
         }
-        if(!cachedBrandDatalist.includes(brand)) {
+        if(brand !== undefined && !cachedBrandDatalist[dbName].includes(brand)) {
             await datalistService.addOption("brand", brand, dbName);
-            cachedBrandDatalist.push(brand);
+            cachedBrandDatalist[dbName].push(brand);
             console.log(`Added ${brand} to datalist "brand"`);
         }
+}
 
+router.post("/products/add", async (req, res) => {
+    try {
+        const product = req.body.product;
+        const dbName = req.dbName;
+        await updateDatalists(product, dbName);
         res.json(await productService.addProduct(product, dbName));
     } catch (e) {
         // TODO: catch different errors
@@ -62,7 +65,10 @@ router.post("/products/add", async (req, res) => {
 /** Saves changes to an already existing product. */
 router.post("/products/update/:_id", async (req, res) => {
     try {
-        res.json(await productService.updateProduct(req.params._id, req.body, req.dbName));
+        const product = req.body;
+        const dbName = req.dbName;
+        await updateDatalists(product, dbName);
+        res.json(await productService.updateProduct(req.params._id, product, dbName));
     } catch (e) {
         // TODO: catch different errors
         console.log(e);

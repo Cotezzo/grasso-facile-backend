@@ -1,5 +1,18 @@
+# Bloat
 node_modules
 npm-debug.log
+package-lock.json
+dist
 volumes
-Makefile
 README.md
+LICENSE
+
+# Local deploy files
+.git
+.gitignore
+.env
+Makefile
+Dockerfile
+docker-compose.*
+.dockerignore
+mongo-init.js
